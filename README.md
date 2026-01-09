@@ -1,8 +1,8 @@
-# Three Tier Architecture Deployment on AWS EKS
+# Three Tier Architecture Deployment on AZURE AKS
 
 Stan's Robot Shop is a sample microservice application you can use as a sandbox to test and learn containerised application orchestration and monitoring techniques. It is not intended to be a comprehensive reference example of how to write a microservices application, although you will better understand some of those concepts by playing with Stan's Robot Shop. To be clear, the error handling is patchy and there is not any security built into the application.
 
-You can get more detailed information from my [blog post](https://www.instana.com/blog/stans-robot-shop-sample-microservice-application/) about this sample microservice application.
+
 
 This sample microservice application has been built using these technologies:
 - NodeJS ([Express](http://expressjs.com/))
@@ -16,6 +16,8 @@ This sample microservice application has been built using these technologies:
 - RabbitMQ
 - Nginx
 - AngularJS (1.x)
+
+
 
 The various services in the sample application already include all required Instana components installed and configured. The Instana components provide automatic instrumentation for complete end to end [tracing](https://docs.instana.io/core_concepts/tracing/), as well as complete visibility into time series metrics for all the technologies.
 
@@ -95,13 +97,21 @@ $ kubectl get svc web
 If you are using a cloud Kubernetes / Openshift / Mesosphere then it will be available on the load balancer of that system.
 
 ## Load Generation
-A separate load generation utility is provided in the `load-gen` directory. This is not automatically run when the application is started. The load generator is built with Python and [Locust](https://locust.io). The `build.sh` script builds the Docker image, optionally taking *push* as the first argument to also push the image to the registry. The registry and tag settings are loaded from the `.env` file in the parent directory. The script `load-gen.sh` runs the image, it takes a number of command line arguments. You could run the container inside an orchestration system (K8s) as well if you want to, an example descriptor is provided in K8s directory. For End-user Monitoring ,load is not automatically generated but by navigating through the Robotshop from the browser .For more details see the [README](load-gen/README.md) in the load-gen directory.  
+load generation using k6 load testing
+
 
 ## Website Monitoring / End-User Monitoring
+The monitoring stack includes
+1) Prometheus
+2) grafana
+3) ELK
+4) loki
+5) open telementary
+
 
 ### Docker Compose
+Docker compose was setup for for local development
 
-To enable Website Monioring / End-User Monitoring (EUM) see the official [documentation](https://docs.instana.io/website_monitoring/) for how to create a configuration. There is no need to inject the JavaScript fragment into the page, this will be handled automatically. Just make a note of the unique key and set the environment variable `INSTANA_EUM_KEY` and `INSTANA_EUM_REPORTING_URL` for the web image within `docker-compose.yaml`.
 
 ### Kubernetes
 
@@ -119,10 +129,22 @@ The payment services provides:
 * Histogram of the total number of items in each cart
 * Histogram of the total value of each cart
 
-To test the metrics use:
 
-```shell
-$ curl http://<host>:8080/api/cart/metrics
-$ curl http://<host>:8080/api/payment/metrics
-```
+# CI/CD
+The CI/CD used are;
+1) github actions
+2) azure devops pipeline
+3) Argo CD
+
+
+# Environment variables
+Azure secret vault was used to store environment variables
+
+# Infrastructure as a code
+The entire Cloud Infrastructure set up was provisioned using Terraform, terraform state files were secired using azure blob storage
+
+# Networking 
+The entire infrastructure was Deployed on Azure Vnet and Domain routing was done using Azure DNS
+
+
 

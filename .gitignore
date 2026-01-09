@@ -3,3 +3,6 @@
 *-private.*
 vendor/
 Gopkg.lock
+
+./sql_env
+./php

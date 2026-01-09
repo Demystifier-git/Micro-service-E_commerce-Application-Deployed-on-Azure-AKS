@@ -1,151 +1,192 @@
-version: '3'
+version: "3.8"
+
 services:
+  
   mongodb:
     build:
-      context: mongo
-    image: ${REPO}/rs-mongodb:${TAG}
+      context: ./mongo
+      dockerfile: Dockerfile
+    image: rs-mongodb:latest
     networks:
-      - robot-shop
-    logging: &logging
-      driver: "json-file"
+      - robotnetwork
+    logging: &json-logging
+      driver: json-file
       options:
         max-size: "25m"
         max-file: "2"
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  mysql:
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    image: rs-mysql:latest
+    env_file:
+      - ./sql_env/.env
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/scripts/20-ratings.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - robotnetwork
+    logging:
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  
   redis:
     image: redis:6.2-alpine
     networks:
-      - robot-shop
+      - robotnetwork
     logging:
-      <<: *logging
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
   rabbitmq:
     image: rabbitmq:3.8-management-alpine
     networks:
-      - robot-shop
+      - robotnetwork
     logging:
-      <<: *logging
-  catalogue:
-    build:
-      context: catalogue
-    image: ${REPO}/rs-catalogue:${TAG}
-    depends_on:
-      - mongodb
-    networks:
-      - robot-shop
+      <<: *json-logging
     healthcheck:
-      test: [ "CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/health" ]
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
-      timeout: 10s
-      retries: 3
-    logging:
-      <<: *logging
-  user:
-    build:
-      context: user
-    image: ${REPO}/rs-user:${TAG}
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - robot-shop
-    healthcheck:
-      test: [ "CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/health" ]
-      interval: 10s
-      timeout: 10s
-      retries: 3
-    logging:
-      <<: *logging
+      retries: 5
+      timeout: 5s
+
+  
   cart:
     build:
-      context: cart
-    image: ${REPO}/rs-cart:${TAG}
+      context: ./cart
+      dockerfile: Dockerfile
     depends_on:
       - redis
     networks:
-      - robot-shop
+      - robotnetwork
+    logging:
+      <<: *json-logging
     healthcheck:
-      test: [ "CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
-      timeout: 10s
-      retries: 3
-    logging:
-      <<: *logging
-  mysql:
-    build:
-      context: mysql
-    image: ${REPO}/rs-mysql-db:${TAG}
-    cap_add:
-      - NET_ADMIN
-    networks:
-      - robot-shop
-    logging:
-      <<: *logging
-  shipping:
-    build:
-      context: shipping
-    image: ${REPO}/rs-shipping:${TAG}
-    depends_on:
-      - mysql
-    networks:
-      - robot-shop
-    healthcheck:
-      test: ["CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 10s
-      retries: 3
-    logging:
-      <<: *logging
+      retries: 5
+      timeout: 5s
+
   ratings:
     build:
-      context: ratings
-    image: ${REPO}/rs-ratings:${TAG}
-    environment:
-      APP_ENV: prod
-    networks:
-      - robot-shop
+      context: ./ratings
+      dockerfile: Dockerfile
+    env_file:
+      - ./php/.env
     depends_on:
       - mysql
-    healthcheck:
-      test: ["CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost/_health"]
-      interval: 10s
-      timeout: 10s
-      retries: 3
+    networks:
+      - robotnetwork
     logging:
-      <<: *logging
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
   payment:
     build:
-      context: payment
-    image: ${REPO}/rs-payment:${TAG}
+      context: ./payment
+      dockerfile: Dockerfile
+    image: rs-payment:latest
     depends_on:
       - rabbitmq
     networks:
-      - robot-shop
-    healthcheck:
-      test: ["CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 10s
-      retries: 3
-    # Uncomment to change payment gateway
-    #environment:
-      #PAYMENT_GATEWAY: "https://www.worldpay.com"
+      - robotnetwork
     logging:
-      <<: *logging
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
   dispatch:
     build:
-      context: dispatch
-    image: ${REPO}/rs-dispatch:${TAG}
+      context: ./dispatch
+      dockerfile: Dockerfile
+    image: rs-dispatch:latest
     depends_on:
       - rabbitmq
     networks:
-      - robot-shop
+      - robotnetwork
     logging:
-      <<: *logging
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  shipping:
+    build:
+      context: ./shipping
+      dockerfile: Dockerfile
+    networks:
+      - robotnetwork
+    logging:
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s  
+
+  user:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - robotnetwork
+    logging:
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s  
+
+  catalogue:
+    build:
+      context: ./catalogue
+      dockerfile: Dockerfile
+    depends_on:
+      - mongo
+    networks:
+      - robotnetwork
+    logging:
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s        
+
+  
   web:
     build:
-      context: web
-      args:
-        # agent key to download tracing libs
-        KEY: ${INSTANA_AGENT_KEY}
-    image: ${REPO}/rs-web:${TAG}
+      context: ./web
+      dockerfile: Dockerfile
+    image: rs-web:latest
     depends_on:
       - catalogue
       - user
@@ -154,19 +195,22 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - robot-shop
-    healthcheck:
-      test: [ "CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/" ]
-      interval: 10s
-      timeout: 10s
-      retries: 3
-    # Uncomment to enable Instana EUM
-    # environment:
-      # INSTANA_EUM_KEY: <your eum key>
-      # INSTANA_EUM_REPORTING_URL: <your reporting url>
+      - robotnetwork
     logging:
-      <<: *logging
+      <<: *json-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
 
 networks:
-  robot-shop:
+  robotnetwork:
+    driver: bridge
+
+volumes:
+  mysql-data:
+
+
 
