@@ -1,23 +1,24 @@
 version: "3.8"
 
 services:
-  
+
   mongodb:
-  build:
-    context: ./mongo
-    dockerfile: Dockerfile
-  networks:
-    - robotnetwork
-  logging: &json-logging
-    driver: json-file
-    options:
-      max-size: "25m"
-      max-file: "2"
-  healthcheck:
-    test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-    interval: 10s
-    retries: 5
-    timeout: 5s
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    image: mongo:8.0
+    networks:
+      - robotnetwork
+    logging: &json-logging
+      driver: json-file
+      options:
+        max-size: "25m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   mysql:
     build:
@@ -34,12 +35,11 @@ services:
     logging:
       <<: *json-logging
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql"]
       interval: 10s
       retries: 5
       timeout: 5s
 
-  
   redis:
     image: redis:6.2-alpine
     networks:
@@ -64,13 +64,13 @@ services:
       retries: 5
       timeout: 5s
 
-  
   cart:
     build:
       context: ./cart
       dockerfile: Dockerfile
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - robotnetwork
     logging:
@@ -88,7 +88,8 @@ services:
     env_file:
       - ./php/.env
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - robotnetwork
     logging:
@@ -104,7 +105,8 @@ services:
       context: ./payment
       dockerfile: Dockerfile
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - robotnetwork
     logging:
@@ -120,7 +122,8 @@ services:
       context: ./dispatch
       dockerfile: Dockerfile
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - robotnetwork
     logging:
@@ -150,8 +153,10 @@ services:
       context: ./user
       dockerfile: Dockerfile
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - robotnetwork
     logging:
@@ -167,7 +172,8 @@ services:
       context: ./catalogue
       dockerfile: Dockerfile
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - robotnetwork
     logging:
@@ -178,16 +184,19 @@ services:
       retries: 5
       timeout: 5s        
 
-  
   web:
     build:
       context: ./web
       dockerfile: Dockerfile
     depends_on:
-      - catalogue
-      - user
-      - shipping
-      - payment
+      catalogue:
+        condition: service_healthy
+      user:
+        condition: service_healthy
+      shipping:
+        condition: service_healthy
+      payment:
+        condition: service_healthy
     ports:
       - "8080:8080"
     networks:
@@ -196,17 +205,8 @@ services:
       <<: *json-logging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
+      interva
 
-
-networks:
-  robotnetwork:
-    driver: bridge
-
-volumes:
-  mysql-data:
 
 
 
