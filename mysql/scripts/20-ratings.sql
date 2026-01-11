@@ -1,5 +1,6 @@
-CREATE DATABASE ratings
-DEFAULT CHARACTER SET 'utf8';
+CREATE USER 'ratings'@'%' IDENTIFIED BY 'iloveit';
+GRANT ALL PRIVILEGES ON ratings.* TO 'ratings'@'%';
+FLUSH PRIVILEGES;
 
 USE ratings;
 
