@@ -1,27 +1,35 @@
-# ================================
-# Stage 1: Build the application
-# ================================
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+#
+# Build
+#
+FROM debian:10 AS build
 
-WORKDIR /app
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates-java \
+        maven && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    update-ca-certificates -f
 
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-RUN mvn clean package -DskipTests
+WORKDIR /opt/shipping
 
-# Copy source code
-COPY src ./src
-RUN mvn clean package -DskipTests
+COPY pom.xml /opt/shipping/
+RUN mvn dependency:resolve
+COPY src /opt/shipping/src/
+RUN mvn package
 
-# ================================
-# Stage 2: Run the application
-# ================================
-FROM eclipse-temurin:17-jdk
-
-WORKDIR /app
-
-COPY --from=build /app/target/*.jar app.jar
+#
+# Run
+#
+FROM openjdk:8-jdk
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+WORKDIR /opt/shipping
+
+ENV CART_ENDPOINT=cart:8080
+ENV DB_HOST=mysql
+
+COPY --from=build /opt/shipping/target/shipping-1.0.jar shipping.jar
+
+CMD [ "java", "-Xmn256m", "-Xmx768m", "-jar", "shipping.jar" ]
