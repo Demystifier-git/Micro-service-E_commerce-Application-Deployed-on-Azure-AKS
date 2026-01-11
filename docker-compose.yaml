@@ -153,7 +153,7 @@ services:
       context: ./user
       dockerfile: Dockerfile
     depends_on:
-      - mongo
+      - mongodb
       - redis
     networks:
       - robotnetwork
@@ -170,7 +170,7 @@ services:
       context: ./catalogue
       dockerfile: Dockerfile
     depends_on:
-      - mongo
+      - mongodb
     networks:
       - robotnetwork
     logging:

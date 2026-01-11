@@ -148,3 +148,62 @@ The entire infrastructure was Deployed on Azure Vnet and Domain routing was done
 
 
 
+
+
+
+
+Thank you for the clarification and additional details regarding technical constraints. I confirm that the requirements are fully acceptable:
+
+VPN access for OVH control panel and all DEV/PROD servers
+
+Access to the client’s GitHub repository
+
+No direct server access without VPN
+
+I am available to start immediately and can proceed as soon as access is provided.
+
+Proposed Pricing & Deliverables
+Hourly Rate: $25/hour
+
+Phase 1 – Immediate Execution (2 weeks, 104 hours – $2,600)
+
+Infrastructure Audit & Documentation – 16 hrs (2 days)
+
+Docker Standardization – 24 hrs (3 days)
+
+CI/CD Pipeline Setup – 24 hrs (3 days)
+
+Zero-Downtime Deployment & Reverse Proxy – 16 hrs (2 days)
+
+Monitoring & Logging – 16 hrs (2 days)
+
+Documentation & Handover – 8 hrs (1 day)
+
+Phase 2 – Planned Future Work (2.5–3 weeks, ~96 hours – $2,400)
+
+Security Audit & Zero Trust Planning – 16 hrs (2 days)
+
+VPN & Bastion Host Setup – 16 hrs (2 days)
+
+OS & Container Hardening – 24 hrs (3 days)
+
+Network Segmentation – 16 hrs (2 days)
+
+Monitoring & Compliance Enhancements – 16 hrs (2 days)
+
+Documentation & Handover – 8 hrs (1 day)
+
+Total: 5 weeks, 200 hours, $5,000
+
+I am confident in delivering a stable, production-ready infrastructure for Phase 1 while fully preparing the foundation for Phase 2 enhancements.
+
+Looking forward to your confirmation so we can begin immediately.
+
+Best regards,
+Delight David
+Senior DevOps Engineer
+
+
+
+
+
