@@ -6,6 +6,8 @@ services:
     build:
       context: ./mongo
       dockerfile: Dockerfile
+    env_file:
+      - ./mongo_env/.env  
     networks:
       - robotnetwork
     logging: &json-logging
