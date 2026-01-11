@@ -139,6 +139,9 @@ services:
     build:
       context: ./shipping
       dockerfile: Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy  
     env_file:
       - ./shipping_env/.env  
     networks:
