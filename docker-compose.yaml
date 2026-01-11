@@ -139,6 +139,8 @@ services:
     build:
       context: ./shipping
       dockerfile: Dockerfile
+    env_file:
+      - ./shipping_env/.env  
     networks:
       - robotnetwork
     logging:
