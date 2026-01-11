@@ -6,7 +6,6 @@ services:
     build:
       context: ./mongo
       dockerfile: Dockerfile
-    image: mongo:8.0
     networks:
       - robotnetwork
     logging: &json-logging
