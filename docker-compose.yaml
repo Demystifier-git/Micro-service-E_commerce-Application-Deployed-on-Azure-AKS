@@ -149,7 +149,7 @@ services:
     logging:
       <<: *json-logging
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
       retries: 5
       timeout: 5s  
