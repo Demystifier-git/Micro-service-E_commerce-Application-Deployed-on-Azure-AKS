@@ -11,16 +11,15 @@ RUN mvn clean package -DskipTests
 
 # Copy source code
 COPY src ./src
-RUN mvn package -DskipTests
+RUN mvn clean package -DskipTests
 
 # ================================
 # Stage 2: Run the application
 # ================================
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-# Copy the built jar
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
