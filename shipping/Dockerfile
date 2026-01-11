@@ -5,12 +5,14 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
+# Copy pom.xml first and download dependencies for caching
 COPY pom.xml .
-RUN mvn clean package -DskipTests
+RUN mvn dependency:go-offline -B
 
-# Copy source code
+# Copy the source code
 COPY src ./src
+
+# Build the application
 RUN mvn clean package -DskipTests
 
 # ================================
@@ -20,6 +22,7 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
+# Copy the built jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
