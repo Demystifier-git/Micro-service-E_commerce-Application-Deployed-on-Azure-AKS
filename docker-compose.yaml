@@ -205,7 +205,16 @@ services:
       <<: *json-logging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-      interva
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+networks:
+  robotnetwork:
+    driver: bridge
+
+volumes:
+  mysql-data:
 
 
 
