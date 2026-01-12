@@ -7,7 +7,7 @@ services:
       context: ./mongo
       dockerfile: Dockerfile
     env_file:
-      - ./mongo_env/.env  
+      - ./mongo_env/.env
     networks:
       - robotnetwork
     logging: &json-logging
@@ -22,20 +22,19 @@ services:
       timeout: 5s
 
   mysql:
-    build:
-      context: ./mysql
-      dockerfile: Dockerfile
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
     env_file:
       - ./sql_env/.env
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./mysql/scripts/20-ratings.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql/scripts/20-ratings.sql:/docker-entrypoint-initdb.d/20-ratings.sql
     networks:
       - robotnetwork
     logging:
       <<: *json-logging
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "mysql"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       retries: 5
       timeout: 5s
@@ -140,9 +139,9 @@ services:
       dockerfile: Dockerfile
     depends_on:
       mysql:
-        condition: service_healthy  
+        condition: service_healthy
     env_file:
-      - ./shipping_env/.env  
+      - ./shipping_env/.env
     networks:
       - robotnetwork
     logging:
@@ -151,7 +150,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
       retries: 5
-      timeout: 5s  
+      timeout: 5s
 
   user:
     build:
@@ -170,7 +169,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       retries: 5
-      timeout: 5s  
+      timeout: 5s
 
   catalogue:
     build:
@@ -187,7 +186,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       retries: 5
-      timeout: 5s        
+      timeout: 5s
 
   web:
     build:
@@ -220,6 +219,7 @@ networks:
 
 volumes:
   mysql-data:
+
 
 
 
