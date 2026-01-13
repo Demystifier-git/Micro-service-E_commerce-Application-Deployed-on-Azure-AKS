@@ -134,24 +134,7 @@ services:
       retries: 5
       timeout: 5s
 
-  shipping:
-    build:
-      context: ./shipping
-      dockerfile: Dockerfile
-    depends_on:
-      mysql:
-        condition: service_healthy
-    env_file:
-      - ./shipping_env/.env
-    networks:
-      - robotnetwork
-    logging:
-      <<: *json-logging
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
+  
 
   user:
     build:
