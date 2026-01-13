@@ -27,6 +27,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./sql_env/.env
+    ports:
+      - "3306:3306"  # map container port to host  
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql/scripts/20-ratings.sql:/docker-entrypoint-initdb.d/20-ratings.sql
