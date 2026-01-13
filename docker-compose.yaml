@@ -181,8 +181,6 @@ services:
         condition: service_healthy
       user:
         condition: service_healthy
-      shipping:
-        condition: service_healthy
       payment:
         condition: service_healthy
     ports:
