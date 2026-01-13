@@ -13,3 +13,10 @@ CREATE TABLE IF NOT EXISTS ratings (
 GRANT ALL ON ratings.* TO 'ratings'@'%'
 IDENTIFIED BY 'iloveit';
 
+-- Create the shipping user and grant privileges
+CREATE USER IF NOT EXISTS 'shipping'@'%' IDENTIFIED BY 'iloveit';
+GRANT ALL PRIVILEGES ON ratings.* TO 'shipping'@'%';
+
+-- Apply privileges
+FLUSH PRIVILEGES;
+
